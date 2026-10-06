@@ -1,0 +1,14 @@
+# Secrets and signing material: never in git, private repo or not.
+.secrets/
+*.keystore
+*.pem
+*.key
+.env
+.env.*
+keystores/
+# Build and run output.
+node_modules/
+broadcast/
+out/
+cache/
+.DS_Store
