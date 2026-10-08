@@ -10,6 +10,11 @@ import { canonical, hashObservation } from '../log.mjs';
 import { round, isPlainRpc, describe, formatRevert } from '../run.mjs';
 import { stubRpc, batchLog, encodeWithString, addrWord, SPENDER, AGENT, DONOR, w } from '../test-support/helpers.mjs';
 
+// The live campaign goal and end date change; observe tests read fixed copies instead.
+const FIXTURES = new URL('./fixtures/', import.meta.url);
+const CAMPAIGN_FIXTURE = new URL('campaign.json', FIXTURES);
+const FACTS_FIXTURE = new URL('facts.json', FIXTURES);
+
 const E18 = 10n ** 18n;
 
 // ------------------------------------------------------------------ act
@@ -196,7 +201,7 @@ test('observe reads caps, float and sorts the last 24 h of payouts', async () =>
     batchLog({ batchId: 5, payer: DONOR, amount: E18, memo: 'too old', tx: '0x55' + '0'.repeat(62), block: 10 }),
   ];
   const { fetchImpl } = stubRpc({ remaining: 8n * 10n ** 16n, spent: 2n * 10n ** 16n, logs });
-  const obs = await observe({ rpc: makeRpc('http://stub', { fetchImpl }), spender: SPENDER, router: null, needsFile: null, ttSenders: HOT, now: Date.parse('2026-10-04T12:00:00Z') });
+  const obs = await observe({ rpc: makeRpc('http://stub', { fetchImpl }), spender: SPENDER, router: null, needsFile: null, ttSenders: HOT, campaignFile: CAMPAIGN_FIXTURE, factsFile: FACTS_FIXTURE, now: Date.parse('2026-10-04T12:00:00Z') });
   assert.equal(obs.chainId, 31337);
   assert.equal(obs.spender.native, true);
   assert.equal(obs.spender.agent, AGENT);

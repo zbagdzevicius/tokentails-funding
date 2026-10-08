@@ -84,8 +84,8 @@
           }
         },
         "verifier": {
-          "type": "blockscout",
-          "url": "https://base.blockscout.com/api/"
+          "type": "sourcify",
+          "url": "https://sourcify.dev/server"
         }
       },
       "testnet": {
@@ -141,8 +141,8 @@
           }
         },
         "verifier": {
-          "type": "blockscout",
-          "url": "https://arbitrum.blockscout.com/api/"
+          "type": "sourcify",
+          "url": "https://sourcify.dev/server"
         }
       },
       "testnet": {
@@ -309,7 +309,7 @@
           "--tempo.fee-token",
           "0x20c0000000000000000000000000000000000000",
           "--gas-estimate-multiplier",
-          "500"
+          "800"
         ],
         "proofVia": "cast",
         "verifier": {
@@ -396,7 +396,7 @@
         "chainId": 143,
         "explorer": "https://monadvision.com",
         "publicRpc": "https://rpc.monad.xyz",
-        "logRpc": "https://rpc1.monad.xyz",
+        "logRpc": "https://rpc2.monad.xyz",
         "address": "{explorer}/address/{address}",
         "tx": "{explorer}/tx/{tx}",
         "usdc": "0x754704Bc059F8C67012fEd69BC8A327a5aafb603",
