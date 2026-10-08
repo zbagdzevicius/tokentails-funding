@@ -6,7 +6,8 @@ emits one public event per payout. The remainder and all rounding dust go to a t
 contract holds no balance between calls.
 
 It is the on-chain part of [Token Tails](https://tokentails.com): the payouts page at
-<https://tokentails.com/shelter-payouts> reads these events straight from the chain, and the
+<https://tokentails.com/shelter-payouts> lists the payouts indexed from these public events (every
+amount links to its transaction on the chain's explorer, so anyone can check it), and the
 [ShelterSplit Rail](../../../../../shelter-rail/) SDK and widget let any app or agent pay the same
 shelters.
 
