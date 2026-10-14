@@ -12,3 +12,5 @@ broadcast/
 out/
 cache/
 .DS_Store
+# Handover script state (tx hashes only)
+.handover-state*
