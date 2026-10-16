@@ -464,7 +464,7 @@ export function walletConfig({ list, chains, routers = [], wallets = [] }) {
   const out = { wallets: {}, chains: {} };
   for (const network of ['mainnet', 'testnet']) {
     out.wallets[network] = {
-      pinkPaw: pick('pink-paw-receiving', 'mainnet'),
+      pinkPaw: pick('pink-paw-receiving', network),
       treasury: pick('shelter-split-treasury', network),
       donateHot: pick('donate-hot-wallet', network),
       agent: pick('agent-wallet', network),
@@ -573,7 +573,7 @@ export interface ChainWallets {
 }
 
 export interface NetworkWallets {
-    /** Pink Paw's payout wallet (held by Token Tails until the handover). */
+    /** Pink Paw's wallet: the shelter payee of every mainnet ShelterSplit since 2026-10-16. */
     pinkPaw: string | null;
     /** The ShelterSplit treasury (remainder and rounding dust). */
     treasury: string | null;

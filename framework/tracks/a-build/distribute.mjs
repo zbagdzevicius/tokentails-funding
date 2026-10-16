@@ -480,7 +480,7 @@ export function runAllScript({ network, deploy, chains, wallets, date = new Date
   }
   const pick = (label) => (wallets || []).find((w) => w.label === (network === 'testnet' ? `testnet-${label}` : label))?.address || '';
   const treasury = pick('shelter-split-treasury');
-  const pinkPaw = (wallets || []).find((w) => w.label === 'pink-paw-receiving')?.address || '';
+  const pinkPaw = pick('pink-paw-receiving');
   const net = (c) => chains[c].networks[network];
   const rpcLines = [...new Map(list.map((c) => [net(c).rpcEnv, net(c).publicRpc])).entries()]
     .map(([env, url]) => (url ? `export ${env}="\${${env}:-${url}}"` : `# ${env}: no public RPC in chains.json; export it yourself`));
