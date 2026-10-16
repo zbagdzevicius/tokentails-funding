@@ -1,5 +1,10 @@
 # Motored fundraising for cats
 
+> **Retired 2026-11-12.** The scheduled event (launchd timer, random amounts, 480 new wallets per round)
+> ran Oct 16 – Nov 12 2026 (rounds 1–3) and is superseded by `tracks/motored-stripe`: one gift per real
+> paid Motored order, one wallet per customer, continuing the `user-N` labels from `user-481`. This
+> folder stays as the rounds 1–3 record. `plan.mjs` round planning is retired with it.
+
 Motored sends gifts to Pink Paw through the Arc USDC ShelterSplit
 `0x457c89e10a6e66633eda5bf82fd086febb5db147` (`donate(string memo)`, 100% to Pink Paw's wallet
 `0x3c833562e682dB66C2415b34961595df135f4771`). 480 event wallets (user-1..user-480) give 1 to 5

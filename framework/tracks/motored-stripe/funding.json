@@ -1,0 +1,21 @@
+{
+  "_readme": "Motored × Stripe money record. During the event Token Tails fronts the USDC: Token Tails tops up the Motored funder from a Token Tails wallet (not the founder's), each top-up recorded here with its tx hash and fundedBy 'token-tails'. After the event Token Tails invoices Motored for exactly the USDC given (sum of confirmed gift rows) plus gas, and Motored pays it through Stripe (reimbursedBy 'motored', stripeInvoice, reimbursedAt). The reimbursement is a related-party pass-through, not Token Tails revenue.",
+  "funder": "0xF1d715677877428aE8E95E8ff5385EC44F84688f",
+  "sender": null,
+  "senderIs": "Token Tails (fronts the USDC during the event); Motored reimburses Token Tails through Stripe afterwards. Which Token Tails wallet tops up the funder is still open.",
+  "chainId": 5042,
+  "split": "0x457c89e10a6e66633eda5bf82fd086febb5db147",
+  "shelter": "0x3c833562e682dB66C2415b34961595df135f4771",
+  "fundedBy": "token-tails",
+  "deposits": [],
+  "gifts": {
+    "confirmed": 0,
+    "usd": "0",
+    "refunded": 0,
+    "disputed": 0
+  },
+  "reimbursedBy": "motored",
+  "stripeInvoice": null,
+  "reimbursedAt": null,
+  "updatedAt": null
+}
