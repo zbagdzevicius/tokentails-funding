@@ -1,0 +1,21 @@
+{
+  "event": "motored-fundraising-for-cats",
+  "label": "Motored sponsored gifts to Pink Paw on behalf of its users",
+  "sponsor": "Motored",
+  "countAs": "sponsor",
+  "disclosure": "Motored is linked to the Token Tails founder. All of these gifts are Motored sponsor money, sent from many small event wallets so the event shows live activity. Count them as one sponsor, never as distinct users or outside wallets. The founder reconciles the event after it ends.",
+  "chainId": 5042,
+  "split": "0x457c89e10a6e66633eda5bf82fd086febb5db147",
+  "shelter": "0x3c833562e682dB66C2415b34961595df135f4771",
+  "explorer": "https://explorer.arc.io",
+  "provisional": false,
+  "started": false,
+  "startedAt": null,
+  "done": false,
+  "sponsoredGiftsConfirmed": 0,
+  "usdToPinkPaw": 0,
+  "gasSpentUsd": 0,
+  "shelterBalanceUsd": null,
+  "recent": [],
+  "updatedAt": "2026-10-16T11:31:09.000Z"
+}
