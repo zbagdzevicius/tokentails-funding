@@ -94,6 +94,9 @@ test('memo classes and matched prefixes (trusted payers)', () => {
   assert.equal(classify('tt:heist:12345678', HOT, SPENDER, trusted), 'treat');
   assert.equal(classify('x402:abc', DONOR, SPENDER, trusted), 'x402');
   assert.equal(classify('hello', DONOR, SPENDER, trusted), 'public');
+  // Motored event gifts are one sponsor's money from any payer: never public, never matched.
+  assert.equal(classify('motored:user-7', DONOR, SPENDER, trusted), 'sponsor');
+  assert.equal(classify('motored:user-7-final', HOT, SPENDER, trusted), 'sponsor');
   assert.deepEqual([...matchedPrefixes(['tt:agent:match-abcdef01', 'tt:match:12345678', 'tt:agent:pace'])], ['abcdef01', '12345678']);
 });
 

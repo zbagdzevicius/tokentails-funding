@@ -492,10 +492,12 @@ export function withLock(p, fn) {
 export function rpcClient(url) {
   let id = 0;
   const call = async (method, params = []) => {
+    // A hung RPC must not hang the tick: launchd starts no new tick while one still runs.
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ jsonrpc: '2.0', id: ++id, method, params }),
+      signal: AbortSignal.timeout(Number(process.env.MOTORED_RPC_TIMEOUT_MS || 15000)),
     });
     const j = await res.json();
     if (j.error) {

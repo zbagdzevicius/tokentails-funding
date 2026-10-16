@@ -68,8 +68,8 @@ async function main() {
     log(`started: ${plan.giftCount} gifts from ${plan.walletCount} wallets until ${new Date(preview.endSec * 1000).toISOString()}`);
   }
   const schedule = buildSchedule(plan, start.startSec);
+  if (DRY) return dryReport(plan, schedule, state.txs(), now); // dry-run writes nothing
   if (!existsSync(P.schedule)) writeSchedule(plan, schedule);
-  if (DRY) return dryReport(plan, schedule, state.txs(), now);
 
   const r = await withLock(P.lock, () => tick({ plan, schedule, state, rpc, now }));
   if (r?.locked) log(`another tick (pid ${r.pid}) is running; exit`);
@@ -255,9 +255,18 @@ function recordReceipt(rec, rc, state) {
 
 async function reconcile(rec, { rpc, state, Transaction }) {
   if (!rec.hash) { state.append({ type: 'tx', id: rec.id, status: 'failed', why: 'no hash recorded' }); return; }
-  const rc = await rpc.receipt(rec.hash).catch(() => null);
+  // An RPC error is not "no receipt": a mined tx must never be marked replaced because a call failed.
+  let rc;
+  try { rc = await rpc.receipt(rec.hash); } catch (e) { log(`${rec.id}: receipt lookup failed (${e.message}); retry next tick`); return; }
   if (rc) { const r = recordReceipt(rec, rc, state); log(`reconciled ${rec.id}: ${r.status}`); return; }
   const latest = await rpc.nonce(rec.from, 'latest');
+  if (latest > rec.nonce) {
+    // A node can report the nonce before it serves the receipt: ask once more before giving up on it.
+    await sleep(3000);
+    const again = await rpc.receipt(rec.hash).catch(() => undefined);
+    if (again) { const r = recordReceipt(rec, again, state); log(`reconciled ${rec.id}: ${r.status}`); return; }
+    if (again === undefined) { log(`${rec.id}: receipt lookup failed; retry next tick`); return; }
+  }
   if (latest > rec.nonce) {
     // The nonce was used by a tx we never logged. Not ours to repeat: mark it and move on.
     state.append({ type: 'tx', id: rec.id, status: 'replaced', why: `nonce ${rec.nonce} used by another tx` });

@@ -64,6 +64,8 @@ export function trustedSenders(spender, list = process.env.TREAT_AGENT_TT_SENDER
  * - agent:     CappedSpender gifts (paid by the spender, or tt:agent:... from a trusted payer) - Token Tails' money
  * - match:     backend 1:1 matches (tt:match:<8 hex of the donor tx>, trusted payer)        - Token Tails' money
  * - treat:     sponsored treats (tt:<source>:<8 hex>, trusted payer)                         - Token Tails' money
+ * - sponsor:   Motored event gifts (motored:user-N...), any payer: one sponsor's money, linked to the
+ *              Token Tails founder. Never public money, never matched, never counted as users.
  * - x402:      agent payments for a cat card (x402:<nonce>)                                  - public money
  * - public:    everything else, including tt:* memos from an untrusted payer                 - public money
  * `trusted` is a Set of lowercase addresses (see trustedSenders); the spender always counts.
@@ -77,6 +79,7 @@ export function classify(memo, payer, spender, trusted = trustedSenders(spender)
     if (m.startsWith('tt:match:')) return 'match';
     return 'treat';
   }
+  if (m.startsWith('motored:')) return 'sponsor';
   if (m.startsWith('x402:')) return 'x402';
   return 'public';
 }
@@ -250,7 +253,7 @@ export async function observe({
   }
   const routerByTx = new Map(routerGifts.map((g) => [g.tx, g]));
 
-  const totals = { public: 0, x402: 0, agent: 0, match: 0, treat: 0 };
+  const totals = { public: 0, x402: 0, agent: 0, match: 0, treat: 0, sponsor: 0 };
   const publicGifts = [];
   for (const b of batches) {
     const kind = classify(b.memo, b.payer, spender, trusted);
@@ -296,6 +299,8 @@ export async function observe({
       agentGiftsUsdc: totals.agent,
       matchesUsdc: totals.match,
       treatsUsdc: totals.treat,
+      // Motored event gifts: sponsor money (one sponsor, linked to the founder), not public, never matched.
+      motoredSponsorUsdc: totals.sponsor,
       publicGifts,
       // Newest first: the agent matches the freshest gift. Router gifts are matched by the backend's
       // ShelterMatchService (SHELTER_MATCH_ENABLED), so the agent skips them unless
