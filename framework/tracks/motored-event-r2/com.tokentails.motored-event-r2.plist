@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.tokentails.motored-event-r2</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/Users/zygimantasbagdzevicius/.nvm/versions/node/v22.22.2/bin/node</string>
+    <string>/Users/zygimantasbagdzevicius/me/tokentails-app/funding/framework/tracks/motored-event/run.mjs</string>
+    <string>--once</string>
+    <string>--out-dir</string>
+    <string>/Users/zygimantasbagdzevicius/me/tokentails-app/funding/framework/tracks/motored-event-r2</string>
+    <string>--key-dir</string>
+    <string>/Users/zygimantasbagdzevicius/.tokentails-wallets/motored-event-r2</string>
+    <string>--funder-key</string>
+    <string>/Users/zygimantasbagdzevicius/.tokentails-wallets/motored-event/funder.json</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>/Users/zygimantasbagdzevicius/me/tokentails-app/funding/framework/tracks/motored-event</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>MOTORED_CONFIRM_MAINNET</key>
+    <string>yes</string>
+    <key>PATH</key>
+    <string>/Users/zygimantasbagdzevicius/.nvm/versions/node/v22.22.2/bin:/usr/bin:/bin</string>
+  </dict>
+  <key>StartInterval</key>
+  <integer>120</integer>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>StandardOutPath</key>
+  <string>/Users/zygimantasbagdzevicius/.tokentails-wallets/motored-event-r2/run.log</string>
+  <key>StandardErrorPath</key>
+  <string>/Users/zygimantasbagdzevicius/.tokentails-wallets/motored-event-r2/run.log</string>
+</dict>
+</plist>
