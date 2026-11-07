@@ -12,10 +12,131 @@
   "started": true,
   "startedAt": "2026-11-06T13:37:00.000Z",
   "done": false,
-  "sponsoredGiftsConfirmed": 0,
-  "usdToPinkPaw": 0,
-  "gasSpentUsd": 0.00126,
-  "shelterBalanceUsd": 144.33,
-  "recent": [],
-  "updatedAt": "2026-11-06T13:37:38.000Z"
+  "sponsoredGiftsConfirmed": 1520,
+  "usdToPinkPaw": 26.35,
+  "gasSpentUsd": 2.005595,
+  "shelterBalanceUsd": 170.68,
+  "recent": [
+    {
+      "memo": "motored:user-277-final",
+      "usd": 0.002995,
+      "tx": "0x7356916f38dc4e4bddcd0241cb8321d847b08518246f042273aa29efac2d9e38",
+      "at": "2026-11-12T12:11:10.191Z"
+    },
+    {
+      "memo": "motored:user-277",
+      "usd": 0.01,
+      "tx": "0x3d99f2385142091644f0a5d080c64691cec5534269c9a87a4632515ac085be19",
+      "at": "2026-11-12T12:11:08.702Z"
+    },
+    {
+      "memo": "motored:user-52",
+      "usd": 0.01,
+      "tx": "0x31c90c097169114ecd8dd54964a1e67f29f53e6184685181de87ce79b8b020f5",
+      "at": "2026-11-12T12:09:06.044Z"
+    },
+    {
+      "memo": "motored:user-117",
+      "usd": 0.02,
+      "tx": "0x86c8bc6652f7d968dc789a6d9e01e36beb3fc688a765761443ee60f496f93cf3",
+      "at": "2026-11-12T12:07:01.941Z"
+    },
+    {
+      "memo": "motored:user-66",
+      "usd": 0.02,
+      "tx": "0x9cd2240f4c014780b26814008d1306ed64b913ce4fabeb99eec7cea41001a6c5",
+      "at": "2026-11-12T12:07:00.602Z"
+    },
+    {
+      "memo": "motored:user-221",
+      "usd": 0.01,
+      "tx": "0x3b995ec63d9c37bfaa99e0717bd7cd8f692d506abfc6b1891631351f76018ac4",
+      "at": "2026-11-12T12:06:59.317Z"
+    },
+    {
+      "memo": "motored:user-326-final",
+      "usd": 0.002936,
+      "tx": "0xdc65269fcd0c29d1cd9aebc686fd3bf226aaa491486545f2474927a8960ed68a",
+      "at": "2026-11-12T12:00:41.007Z"
+    },
+    {
+      "memo": "motored:user-326",
+      "usd": 0.01,
+      "tx": "0x99e8b1353199a11267bcb5977069d058745b546bc1ae6c54fa5e273edb439987",
+      "at": "2026-11-12T12:00:39.332Z"
+    },
+    {
+      "memo": "motored:user-288",
+      "usd": 0.01,
+      "tx": "0x903c3a13d6d83e41943c163dc97230c6cf33d63d436e872a464e6dd8e6a9c933",
+      "at": "2026-11-12T11:58:26.626Z"
+    },
+    {
+      "memo": "motored:user-431",
+      "usd": 0.01,
+      "tx": "0xb48e744b236199e00d0da4c907c5c4ad8c56c386b083a39cc418ef93146b6867",
+      "at": "2026-11-12T11:56:15.971Z"
+    },
+    {
+      "memo": "motored:user-293",
+      "usd": 0.01,
+      "tx": "0x19521fe89bd182466e4807dd83f006d0e3478aaafd268a515f5e091827a2e55b",
+      "at": "2026-11-12T11:56:12.914Z"
+    },
+    {
+      "memo": "motored:user-285",
+      "usd": 0.02,
+      "tx": "0x7f7e21a912bc7dfaa9ff95828b882d3aa9dc9504e1461af2b3114ad9b73ed763",
+      "at": "2026-11-12T11:54:05.733Z"
+    },
+    {
+      "memo": "motored:user-441",
+      "usd": 0.01,
+      "tx": "0xeb2d171538a2fdd7d3ee7e8b65eca04eebaeb48454bbde3bd02a5253ad40760e",
+      "at": "2026-11-12T11:49:55.113Z"
+    },
+    {
+      "memo": "motored:user-132",
+      "usd": 0.01,
+      "tx": "0x732b1f97aa8227eb0fec8fc6f8ec868c2505842edc446d970be29d1cb754e8ce",
+      "at": "2026-11-12T11:45:52.117Z"
+    },
+    {
+      "memo": "motored:user-202",
+      "usd": 0.01,
+      "tx": "0xdfb4a91fdb7c699fa78e1f7d70bd2b974c395f962941a32c0426a0547bfe5e97",
+      "at": "2026-11-12T11:33:42.686Z"
+    },
+    {
+      "memo": "motored:user-4",
+      "usd": 0.01,
+      "tx": "0x89dd4d93473185a92402492dc66608ad43c184f4c3f459b5e97e51f3177acb4b",
+      "at": "2026-11-12T11:31:40.390Z"
+    },
+    {
+      "memo": "motored:user-298",
+      "usd": 0.01,
+      "tx": "0x11985c0289e3f0cd894394121d401b127cbb432847b9bc2395b4672a756201de",
+      "at": "2026-11-12T11:31:38.870Z"
+    },
+    {
+      "memo": "motored:user-135",
+      "usd": 0.01,
+      "tx": "0x994fc00c4820cd818b535778818f64bd43673271c1197e084e3a7a5632a2cd78",
+      "at": "2026-11-12T11:27:30.706Z"
+    },
+    {
+      "memo": "motored:user-479",
+      "usd": 0.01,
+      "tx": "0x775f9924c39de9f84bf991c2274fa0698af2927f75aec490305c2788f75519ae",
+      "at": "2026-11-12T11:25:23.415Z"
+    },
+    {
+      "memo": "motored:user-374",
+      "usd": 0.01,
+      "tx": "0x9643a95f758c31dac9a923c7c5285ccf301ae285376ad54d3946bae14de47df8",
+      "at": "2026-11-12T11:25:22.188Z"
+    }
+  ],
+  "updatedAt": "2026-11-12T12:17:21.000Z"
 }
