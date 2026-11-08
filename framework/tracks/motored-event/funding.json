@@ -1,0 +1,12 @@
+{
+  "_readme": "Every deposit into the Motored event funder, read from Arc mainnet (chainId 5042) on 2026-11-12. Arc USDC is the native coin (18 decimals on the native side).",
+  "funder": "0xF1d715677877428aE8E95E8ff5385EC44F84688f",
+  "sender": "0x29D7d5361052c0990879D7926a0c98A63F9860F8",
+  "senderIs": "the Token Tails founder's own wallet; Motored is the founder's company (a related party)",
+  "deposits": [
+    { "round": 1, "date": "2026-10-16T11:24:28Z", "usdc": "100.0", "tx": "0x4657eb26074d6a2d97d26919a6e5f726a79251ae8fd954efedef9c560088b347" },
+    { "round": 2, "date": "2026-10-25T20:34:34Z", "usdc": "14.0", "tx": "0xc25d5c54df668adef6a45c4e76050c5f4562699caf6f1f643407461ed3c38622" },
+    { "round": 3, "date": "2026-11-06T13:35:18Z", "usdc": "40.0", "tx": "0xba946cd04d20ea662f68d9fb932d2910ea547d447472799e9b51d462ab71c4fe" }
+  ],
+  "totalUsdc": "154.0"
+}
