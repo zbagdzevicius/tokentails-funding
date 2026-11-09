@@ -27,8 +27,8 @@ Motored is the Token Tails founder's company (a related party). All the money ca
 the founder's own wallet `0x29D7d5361052c0990879D7926a0c98A63F9860F8` sent 154 USDC in three
 deposits (100 on Oct 16, 14 on Oct 25, 40 on Nov 6; tx hashes in
 `framework/tracks/motored-event/funding.json`) to one funder wallet,
-`0xF1d715677877428aE8E95E8ff5385EC44F84688f`, that Token Tails controls. `plan.mjs`
-then created 480 throwaway wallets per round, funded each from that funder, and `run.mjs` sent
+`0xF1d715677877428aE8E95E8ff5385EC44F84688f`, that Token Tails controls. Each round funded
+480 throwaway wallet slots from that funder (a fixed spend cap), and `run.mjs` sent
 small `donate("motored:user-N")` gifts to the Arc ShelterSplit
 `0x457c89e10a6e66633eda5bf82fd086febb5db147`, which pays 100% to Pink Paw's wallet
 `0x3c833562e682dB66C2415b34961595df135f4771`. Every round reused the labels `user-1` to `user-480`
