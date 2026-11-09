@@ -60,10 +60,10 @@ const NETWORKS = ['testnet', 'mainnet'];
 
 /**
  * Chains whose USDC is known to lack Circle's EIP-3009 (receiveWithAuthorization): a router there could
- * only take gifts through flush(). Tempo's stablecoins are TIP-20 tokens, not FiatToken. Every other
- * chain still gets the on-chain preflight below before the deploy.
+ * only take gifts through flush(). Arc's USDC is a FiatToken, so nothing is hardcoded here; every chain
+ * still gets the on-chain preflight below before the deploy.
  */
-export const NO_EIP3009 = { tempo: 'Tempo stablecoins are TIP-20 tokens without EIP-3009' };
+export const NO_EIP3009 = {};
 
 /** The read-only EIP-3009 probe: a FiatToken answers `false`, a token without it reverts. */
 export const EIP3009_PROBE_ARGS =

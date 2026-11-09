@@ -59,11 +59,11 @@ export const wavePaths = {
   portfolio: () => process.env.FUND_PORTFOLIO || join(HERE, '..', '..', 'portfolio', 'opportunities.json'),
 };
 
-// The token ShelterSplit pays out on this network: a network-specific splitToken (e.g. MUSD on Mezo)
-// wins over the chain's USDC. With `symbol` naming a second option from the network's splitTokens
-// (e.g. EURC), that one is returned instead; `listed: false` means chains.json has no entry for it.
-// A testnet with no stablecoin at all (Robinhood Chain testnet) lists a `mockToken` instead: the wave
-// deploys the test MockUSDC in the same broadcast as ShelterSplit (DeployShelterSplit.s.sol,
+// The token ShelterSplit pays out on this network: a network-specific splitToken (a chain that pays
+// out in its own stablecoin) wins over the chain's USDC. With `symbol` naming a second option from
+// the network's splitTokens (e.g. EURC), that one is returned instead; `listed: false` means
+// chains.json has no entry for it. A testnet with no stablecoin at all lists a `mockToken` instead:
+// the wave deploys the test MockUSDC in the same broadcast as ShelterSplit (DeployShelterSplit.s.sol,
 // SHELTERSPLIT_MOCK_TOKEN=1) and records the instance with mock: true. Testnet only: waveRanking,
 // waveScript and the Solidity script itself all refuse it anywhere else.
 export function splitToken(n, symbol = null) {
@@ -74,7 +74,7 @@ export function splitToken(n, symbol = null) {
     ? { symbol: n.splitToken.symbol, address: n.splitToken.address || null, decimals: n.splitToken.decimals ?? 18 }
     : { symbol: n.usdcSymbol || 'USDC', address: n.usdc || null, decimals: n.usdcDecimals ?? 6 };
   const sym = symbol ? String(symbol).toUpperCase() : null;
-  // usdcSymbol names a bridged USDC (USDC.e on Tempo mainnet): asking for USDC still means that token.
+  // usdcSymbol names a bridged USDC (e.g. USDC.e-style): asking for USDC still means that token.
   if (!sym || sym === String(def.symbol).toUpperCase() || (sym === 'USDC' && !n.splitToken)) return { ...def, alt: false, listed: true, verify: false };
   const t = n.splitTokens?.[sym];
   return { symbol: sym, address: t?.address || null, decimals: t?.decimals ?? 6, alt: true, listed: !!t, verify: !t || !!t.verify };
@@ -192,7 +192,7 @@ export function waveScript(rows, { network = 'mainnet', date = new Date().toISOS
     'set -uo pipefail',
     ...mainnetGuard(network, waveFile(network, token)),
     ...(redeploy ? ['# Generated with --redeploy: deploy again even where an earlier broadcast holds a mined instance.', 'export FORCE_REDEPLOY="${FORCE_REDEPLOY-1}"'] : []),
-    'export FOUNDRY_DISABLE_NIGHTLY_WARNING=1   # the Tempo-aware nightly prints a warning that would pollute captured output',
+    'export FOUNDRY_DISABLE_NIGHTLY_WARNING=1   # the nightly Foundry prints a warning that would pollute captured output',
     `PROJECT=${q(project)}`,
     `FUND_ROOT=${q(root)}`,
     'SELF="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"',
@@ -237,7 +237,7 @@ export function waveScript(rows, { network = 'mainnet', date = new Date().toISOS
     '  local got; got="$(cast chain-id --rpc-url "$url" 2>/dev/null)"',
     '  [ "$got" = "$id" ] || { echo "skip: RPC answered chain ${got:-nothing}, expected $id"; SKIP+=("$chain: wrong RPC"); return; }',
     '  echo "deployer balance: $(cast balance "$DEPLOYER" --rpc-url "$url" --ether 2>/dev/null || echo "?")"',
-    '  # The proof payout spends PROOF_AMOUNT of the payout token (USDC, or USDG on Robinhood): show it before deploying.',
+    '  # The proof payout spends PROOF_AMOUNT of the payout token (USDC): show it before deploying.',
     '  [ "$token" = MOCK ] || echo "deployer payout-token balance (raw units): $(cast call "$token" "balanceOf(address)(uint256)" "$DEPLOYER" --rpc-url "$url" 2>/dev/null || echo "?")"',
     '  # Re-running after a partial failure must not deploy a second instance. This chain is here because no',
     '  # instance for this token is recorded, so a ShelterSplit for this token already in the broadcast is an',
@@ -292,8 +292,8 @@ export function waveScript(rows, { network = 'mainnet', date = new Date().toISOS
     '    "${SIGNER[@]}" --sender "$DEPLOYER" --broadcast "$@" || SKIP+=("$chain: proof payout failed")',
     '}',
     '',
-    '# Tempo: Foundry\'s local TIP-20 emulation rejects transferFrom inside a script (PolicyForbids), while the',
-    '# real node accepts it, so the proof payout runs as three cast sends and records a broadcast-shaped file',
+    "# Arc: Foundry's local EVM cannot emulate the USDC system contract at 0x3600... (StackUnderflow), so the",
+    '# proof payout runs as three cast sends and records a broadcast-shaped file',
     '# that fund a:ingest reads like a forge broadcast.',
     'proof_cast() { # chain chainId url split [extra forge args...]',
     '  local chain="$1" id="$2" url="$3" split="$4"; shift 4',
@@ -356,8 +356,8 @@ const PAYOUT_TOPICS = new Set([
 ]);
 
 // The hash of the proof payout, chosen by its receipt rather than by forge's function label. Forge can
-// pair the labels and hashes of an approve + disburse broadcast the wrong way round (Base mainnet,
-// 2026-10-07: the hash labelled disburse was the USDC approve). With receipts, the proof is the tx whose
+// pair the labels and hashes of an approve + disburse broadcast the wrong way round (2026-10-07: the
+// hash labelled disburse was the USDC approve). With receipts, the proof is the tx whose
 // receipt holds a Disbursed/NativeDisbursed log emitted by the split; with none (the cast-written proof
 // file), the label is all there is. A broadcast with receipts but no payout log yields null.
 export function proofHashOf(run, t, split) {
@@ -417,8 +417,8 @@ export function publicDeployments(list, chains, network) {
   return list.filter((d) => d.network === network && (network === 'testnet' || !d.mock))
     .map(({ contract, chain, network: n, chainId, address, tx, token, proofTxs }) => {
       // Any non-USDC instance states its symbol and decimals: a second-token instance (EURC) and a chain
-      // whose default payout token is not USDC (USDG on Robinhood, MUSD on Mezo). The pages otherwise
-      // label every ERC-20 payout on a chain with that chain's default token, and must never sum it as USDC.
+      // whose default payout token is not USDC. The pages otherwise label every ERC-20 payout on a chain
+      // with that chain's default token, and must never sum it as USDC.
       // The recorded spelling wins over splitToken's upper-cased one (pathUSD, mUSDC, not PATHUSD, MUSDC).
       let alt = null;
       try { const ni = netOf(chains, chain, n); const t = splitToken(ni, token || null); if (t.symbol !== 'USDC') alt = t; } catch { /* unknown chain */ }
@@ -504,7 +504,7 @@ export function walletConfig({ list, chains, routers = [], wallets = [] }) {
         rpc: n.publicRpc,
         ...(n.logRpc ? { logRpc: n.logRpc } : {}),
         explorer: n.explorer,
-        // What the chain's default split pays (pathUSD on Tempo testnet, mUSDC on Robinhood testnet).
+        // What the chain's default split pays (the recorded symbol, e.g. EURC or mUSDC).
         token: chosen ? chosen.v.token : { symbol: primary.symbol, decimals: primary.decimals ?? 6, address: primary.address ? primary.address.toLowerCase() : null },
         split: chosen ? chosen.v : null,
         otherSplits: instances.filter((x) => x !== chosen).map((x) => x.v),
@@ -716,7 +716,7 @@ async function cmdWave({ flags }) {
 
 const ADDR_RE = /^0x[0-9a-fA-F]{40}$/;
 const bin = (name) => process.env[`FUND_${name.toUpperCase()}_BIN`] || name;
-// The Tempo-aware nightly Foundry prints a warning; keep it out of every captured cast/forge output.
+// The nightly Foundry prints a warning; keep it out of every captured cast/forge output.
 const QUIET_ENV = () => ({ ...process.env, FOUNDRY_DISABLE_NIGHTLY_WARNING: '1' });
 
 // Constructor arguments of a recorded deployment: from the deploy broadcast when it is still on disk,

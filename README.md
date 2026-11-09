@@ -9,9 +9,8 @@ documents are not included. No keys, seeds or passwords are in this repo.
 |---|---|
 | `framework/tracks/motored-event*/` | The Motored sponsored fundraising event, rounds 1–3 (retired; kept as the record). |
 | `framework/tracks/motored-stripe/` | The Motored × Stripe model that replaced it: one gift per real paid order. |
-| `framework/tracks/a-build/` | ShelterSplit / DonateRouter deploy scripts, chain config, deployment records, public wallet addresses |
-| `framework/bin/fund.mjs`, `framework/lib/` | CLI that runs the deploy and payout steps (the facts registry it checks stays internal) |
-| `e2e/` | Local end-to-end stack for the donate flow (Anvil test keys only) |
+| `framework/tracks/a-build/` | The Arc ShelterSplit / DonateRouter track: the contract, chain config, deployment records, public wallet addresses, the deploy/payout scripts, the treat agent, and the Arc microgrants + Tameion programs. |
+| `framework/lib/core.mjs` | The dependency-free core the a-build track scripts import (`CORE`). |
 
 ## Motored × Stripe (current)
 
@@ -44,6 +43,3 @@ Every commit before the README commit is replayed from our internal funding work
 original date and subject, filtered to the files in this repo (tests that only run in the internal
 workspace are left out of every commit). The README and `funding.json` were added on 2026-11-12,
 when this repo was created.
-
-Tests: `cd framework && npm test`. The full CLI expects this repo checked out at `funding/` inside the
-tokentails repo.

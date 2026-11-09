@@ -4,7 +4,7 @@
 //                                                    tops up donatehot (treat float + gas) and the x402 agent
 //                                                    (demo amount + gas) from the deployer keystore, per chain
 //     [--plan topup | PLAN=topup]                   use the plan's profiles.topup instead (one week of treats,
-//                                                    the Base agent); writes wave/distribute-<network>-topup.sh
+//                                                    the hot-wallet agent); writes wave/distribute-<network>-topup.sh
 //   fund a:mainnet-plan --network mainnet|testnet   write wave/<network>-all.sh, the run-order wrapper:
 //                                                    balance check -> ShelterSplit (USDC, EURC) -> DonateRouters
 //                                                    -> a:ingest -> a:verify + a:verify-source -> distribute
@@ -25,8 +25,8 @@ const ADDR = /^0x[0-9a-fA-F]{40}$/;
 let T;
 const A = async () => (T ||= await import('./track.mjs'));
 
-export const MAINNET_CHAIN_IDS = [5042, 4217, 42161, 43114, 8453, 4663, 143];
-export const TESTNET_CHAIN_IDS = [5042002, 42431, 421614, 84532, 43113, 46630, 10143];
+export const MAINNET_CHAIN_IDS = [5042];
+export const TESTNET_CHAIN_IDS = [5042002];
 export const NETWORK_IDS = { mainnet: MAINNET_CHAIN_IDS, testnet: TESTNET_CHAIN_IDS };
 /** Plan roles that receive transfers, and their wallets.public.json label (testnet- prefixed on testnet). */
 export const ROLES = { donatehot: 'donate-hot-wallet', agent: 'agent-wallet' };
@@ -168,7 +168,7 @@ export function resolvePlan({ plan, chains, wallets, network, only = null, profi
       return asset(t.address.toLowerCase(), t.symbol, t.decimals);
     };
     const amount = (v, d, what) => { try { return parseUnits(v, d); } catch (e) { local.push(`${at}: ${what}: ${e.message}`); return null; } };
-    // gas: what each transfer costs the deployer, in the native coin or (Tempo) a fee token
+    // gas: what each transfer costs the deployer, in the native coin or a fee token
     let gas = { asset: 'native', perTransfer: '0' };
     if (pc.gasAsset && pc.gasAsset !== 'native') {
       const g = tokenAsset(pc.gasAsset);
@@ -428,7 +428,7 @@ export function distributeScript(resolved, { network, profile = null, date = new
 export function pendingSteps({ deploy, network, chains, deployments, routers, only = null }) {
   const out = {};
   // A primary instance is any recorded split whose token is not a chains.json second token (EURC):
-  // the recorded spelling varies (USDC, pathUSD on Tempo testnet, mUSDC, USDG).
+  // the recorded spelling varies (USDC, EURC, mUSDC).
   const recorded = (chain, sym) => deployments.filter((d) => {
     if (d.chain !== chain || d.network !== network || d.contract === 'DonateRouter') return false;
     const t = String(d.token || '').toUpperCase();
@@ -500,13 +500,13 @@ export function runAllScript({ network, deploy, chains, wallets, date = new Date
     '#   6. fund a:verify + a:verify-source per chain',
     `#   7. wave/${dist} (donatehot treat float + gas, agent x402 amount + gas; top-ups only)`,
     `#   8. fund fill --ingest${network === 'mainnet' ? ' --write' : ' (preview; FILL_WRITE=1 writes)'}`,
-    '#   9. prints the files to commit and the Tempo campaign-memo commands',
+    '#   9. prints the files to commit',
     '# Rerun-safe: chains with a recorded split/router are skipped; distribution only tops up.',
     '# Per-chain stop-on-error: a chain that fails a step is left out of every later step; the others go on.',
     `#   DRY_RUN=1 ./${self}      simulate everything (forge without --broadcast, transfers printed, nothing recorded)`,
     `#   CHAINS=a,b ./${self}     limit the run (default: ${list.join(',')})`,
     '#   FUND_KEYSTORE (default tokentails), FUND_KEYSTORE_PASSWORD_FILE (optional, a path), RPC_* (default: the public RPCs)',
-    `#   PROOF_SHELTER / PROOF_SHELTER_NAME / PROOF_AMOUNT: the wave's proof payout and the Tempo memo (default: Pink Paw, ${proofDefault(network) === '100000' ? '0.1' : '1'} token = ${proofDefault(network)} raw); PROOF_SHELTER= turns it off`,
+    `#   PROOF_SHELTER / PROOF_SHELTER_NAME / PROOF_AMOUNT: the wave's proof payout (default: Pink Paw, ${proofDefault(network) === '100000' ? '0.1' : '1'} token = ${proofDefault(network)} raw); PROOF_SHELTER= turns it off`,
     'set -uo pipefail',
     ...mainnetGuard(network, self),
     `NETWORK=${network}`,
@@ -698,20 +698,12 @@ export function runAllScript({ network, deploy, chains, wallets, date = new Date
       ? ['if [ "$DRY" = 1 ]; then "${FUND[@]}" fill || true; else "${FUND[@]}" fill --ingest --write || WARN+=("fund fill reported open values (see above)"); fi']
       : ['if [ "$DRY" != 1 ] && [ "${FILL_WRITE:-0}" = 1 ]; then "${FUND[@]}" fill --ingest --network testnet --write || WARN+=("fund fill"); else "${FUND[@]}" fill --network testnet || true; fi']),
     '',
-    'step "9. commit these files, then the Tempo campaign memo"',
+    'step "9. commit these files"',
     'cd "$FUND_ROOT/../.." && git status --short -- funding/framework/tracks/a-build/deployments.json funding/framework/tracks/a-build/router-deployments.json \\',
     '  backend/src/shelter/onchain/wallet.config.ts client/public/shelter-payouts catnip-heist/public/payouts client/public/heist-game/payouts \\',
     '  funding/framework/applications; cd "$FUND_ROOT"',
     'echo "  git add <the paths above> && git commit -m \\"chore(funding): record $NETWORK deployments\\" && git push"',
     'echo "  client/public/shelter-payouts/routers.json is rewritten by fund router record (the public router list): commit it too"',
-    `TEMPO_SPLIT="$(node -e 'const d=require(process.argv[1]);const x=d.filter(e=>e.chain==="tempo"&&e.network===process.argv[2]);console.log(x.length?x[x.length-1].address:"")' "$DEPLOYMENTS" "$NETWORK")"`,
-    'SIGNER_TXT="${SIGNER[*]}"',
-    `TEMPO_TOKEN=${q(chains.tempo?.networks?.[network]?.usdc || '')}; TEMPO_RPC=${q(chains.tempo?.networks?.[network]?.rpcEnv || 'RPC_TEMPO')}`,
-    'if [ -n "${PROOF_SHELTER:-}" ] && [ -n "$TEMPO_SPLIT" ] && case ",$(alive)," in *,tempo,*) true;; *) false;; esac; then',
-    '  echo "Tempo campaign memo (you run it; fund fill reads TEMPO_TX from fill-values.json):"',
-    '  echo "  cast send $TEMPO_TOKEN \\"approve(address,uint256)\\" $TEMPO_SPLIT $PROOF_AMOUNT --rpc-url \\$$TEMPO_RPC $SIGNER_TXT --tempo.fee-token 0x20c0000000000000000000000000000000000000"',
-    '  echo "  cast send $TEMPO_SPLIT \\"disburseWithMemo(uint256,bytes32)\\" $PROOF_AMOUNT \\$(cast format-bytes32-string \\"Catnip Heist campaign\\") --rpc-url \\$$TEMPO_RPC $SIGNER_TXT --tempo.fee-token 0x20c0000000000000000000000000000000000000"',
-    'fi',
     '',
     'echo; for w in "${WARN[@]:-}"; do [ -n "$w" ] && echo "warning: $w"; done',
     'echo "chains done: $(alive)"',

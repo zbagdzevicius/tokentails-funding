@@ -133,7 +133,7 @@ export function loadApp(slug) {
 }
 
 /**
- * The worst-case filled length of a single-brace placeholder ({ARB_SPLIT}, {TEMPO_TX}, {DEMO_URL}):
+ * The worst-case filled length of a single-brace placeholder ({SPLIT_ADDRESS}, {DEMO_URL}):
  * a 0x address is 42 characters, a tx hash 66, a URL up to 60. Other placeholders count as written.
  */
 export function placeholderWorstCase(name) {
@@ -294,7 +294,7 @@ export function coreChecks(app, { facts, frames }) {
   else add('banned-terms', 'ok', `${banned.length} term(s) screened`);
 
   // chain: the draft names every chain its call.md targets (a body copied from another program's
-  // draft keeps the old chain's text, e.g. "Why Tempo" in a Team1 Avalanche draft)
+  // draft keeps the old chain's text)
   const targets = [].concat(app.call.fm.chain || []).map((c) => String(c).trim()).filter(Boolean);
   const unnamed = targets.filter((c) => !new RegExp(`\\b${c.replace(/[^a-z0-9]/gi, '')}\\b`, 'i').test(allText));
   // Advisory (a warning at every status): the AI revise loop cannot be relied on to fix chain facts.

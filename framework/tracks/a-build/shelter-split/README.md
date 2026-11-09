@@ -27,7 +27,7 @@ payer ──(USDC / EURC via disburse, native USDC on Arc via donate)──▶ S
 | Function | What it does |
 |---|---|
 | `disburse(amount, memo)` | Pulls `amount` of the ERC-20 token (approve first) and splits what actually arrived. Emits `Disbursed` per shelter and one `DisbursementBatch`. |
-| `disburseWithMemo(amount, bytes32 memo)` | Tempo TIP-20 only: the same split, each payout sent with `transferWithMemo`, so the memo lands in the token's own event. |
+| `disburseWithMemo(amount, bytes32 memo)` | TIP-20 memo tokens only: the same split, each payout sent with `transferWithMemo`, so the memo lands in the token's own event. |
 | `donate(memo)` / `receive()` | Splits `msg.value`. On Arc the native coin is USDC, so there is no approve step. Emits `NativeDisbursed` and `NativeDisbursementBatch`, kept separate so the 18-decimal native and 6-decimal ERC-20 scales never mix. |
 | `preview(amount)` | Shows the split before paying. |
 | `addShelter`, `updateShelter`, `setShelterActive`, `removeShelter` | Owner-only registry. Total shares can never exceed 10,000 bps. |
@@ -41,28 +41,16 @@ the whole call reverts and nobody is paid short.
 Source is verified for every split and router listed (Blockscout, Etherscan or Sourcify). The
 records are `../deployments.json` (splits) and `../router-deployments.json` (routers); `fund a:ingest`
 writes them and the public config `backend/src/shelter/onchain/wallet.config.ts`. Mainnet rows are
-added after the mainnet wave. Testnets, the split each chain defaults to plus the EURC instances:
+added after the mainnet wave. Testnets, the split each chain defaults to plus the EURC instance:
 
 | Network | Token | ShelterSplit | DonateRouter | Proof |
 |---|---|---|---|---|
 | Arc testnet (5042002) | USDC | [`0x457c89e10a6e66633eda5bf82fd086febb5db147`](https://explorer.testnet.arc.io/address/0x457c89e10a6e66633eda5bf82fd086febb5db147) | [`0xa1cf1db2042dea0f169b1acdab479d4f17852860`](https://explorer.testnet.arc.io/address/0xa1cf1db2042dea0f169b1acdab479d4f17852860) | [payout](https://explorer.testnet.arc.io/tx/0xa90f97134ab92efa5ade8c6f1c6eddcc9bded100a6c1bc2a5b1b91ba6da4360a) |
 | Arc testnet (5042002) | EURC | [`0x937f13ce28294011567615330dbcb859a06a0bba`](https://explorer.testnet.arc.io/address/0x937f13ce28294011567615330dbcb859a06a0bba) | [`0x47ed389d2af5f4cd3e884208b72d609e78f6c5df`](https://explorer.testnet.arc.io/address/0x47ed389d2af5f4cd3e884208b72d609e78f6c5df) | [payout](https://explorer.testnet.arc.io/tx/0xc68ceb5a3633b78cd1681c81dde1ff310ca04f1f378003497acc906eb88f387b) |
-| Tempo testnet (42431) | pathUSD | [`0x9978e60da2352a8de02852788d34bd95849a598d`](https://explore.testnet.tempo.xyz/address/0x9978e60da2352a8de02852788d34bd95849a598d) | – (no EIP-3009) | [payout](https://explore.testnet.tempo.xyz/tx/0x2a8d49065e0d9bbd8ba6f1563eebf5a34a60d9203f9fc07582d84ccb7791af2d), [memo payout](https://explore.testnet.tempo.xyz/tx/0x7e9dc9e3d731e7ad579134927f0a1dd202975ee3bb6e9e55f4463621eea47fda) |
-| Arbitrum Sepolia (421614) | USDC | [`0x457c89e10a6e66633eda5bf82fd086febb5db147`](https://sepolia.arbiscan.io/address/0x457c89e10a6e66633eda5bf82fd086febb5db147) | [`0xe271131be71e29f83084fd34aa6c70d50a2aea71`](https://sepolia.arbiscan.io/address/0xe271131be71e29f83084fd34aa6c70d50a2aea71) | [payout](https://sepolia.arbiscan.io/tx/0x73cdfdb403067706ce0760fd38feed6e2a1e93bbc8d1f6cd1c9e75af7134184d) |
-| Avalanche Fuji (43113) | USDC | [`0x8bf026d3816cb2344d14aa6301fccde3b289878c`](https://subnets-test.avax.network/c-chain/address/0x8bf026d3816cb2344d14aa6301fccde3b289878c) | [`0x4b25318bf32f2740c086350f802452ef2095cb6f`](https://subnets-test.avax.network/c-chain/address/0x4b25318bf32f2740c086350f802452ef2095cb6f) | [payout](https://subnets-test.avax.network/c-chain/tx/0x4170387155b296e140924ed6a9289688dc4801dbab6372d8117ee42f9c256f02) |
-| Avalanche Fuji (43113) | EURC | [`0x6f0a33ec63cb79dcc13eff6f31795cd11b38a022`](https://subnets-test.avax.network/c-chain/address/0x6f0a33ec63cb79dcc13eff6f31795cd11b38a022) | [`0xa1cf1db2042dea0f169b1acdab479d4f17852860`](https://subnets-test.avax.network/c-chain/address/0xa1cf1db2042dea0f169b1acdab479d4f17852860) | [payout](https://subnets-test.avax.network/c-chain/tx/0xa0a985544ae6c97ec63c7581f404ff97962a3a14a1113e6de7459a80ea806efa) |
-| Base Sepolia (84532) | USDC | [`0x8bf026d3816cb2344d14aa6301fccde3b289878c`](https://sepolia.basescan.org/address/0x8bf026d3816cb2344d14aa6301fccde3b289878c) | [`0x683d66d89eaa7460d3a12337cdf8185fae37dfbd`](https://sepolia.basescan.org/address/0x683d66d89eaa7460d3a12337cdf8185fae37dfbd) | [payout](https://sepolia.basescan.org/tx/0x26a7b0135627bd743046a56fdd69a93b1a830472702f241d48bd7790efacc5fb) |
-| Robinhood Chain testnet (46630) | mUSDC (mock: the testnet has no stablecoin) | [`0x2d42d01a00d75ade8c4f9503a7a6cee8a5f34777`](https://explorer.testnet.chain.robinhood.com/address/0x2d42d01a00d75ade8c4f9503a7a6cee8a5f34777) | – (no EIP-3009) | [payout](https://explorer.testnet.chain.robinhood.com/tx/0x276c904ce4b5862e8cd72b3e561ea9ea2bfc26428844c5035817726c5a84aa23) |
-| Monad testnet (10143) | USDC | [`0x457c89e10a6e66633eda5bf82fd086febb5db147`](https://testnet.monadvision.com/address/0x457c89e10a6e66633eda5bf82fd086febb5db147) | [`0xe271131be71e29f83084fd34aa6c70d50a2aea71`](https://testnet.monadvision.com/address/0xe271131be71e29f83084fd34aa6c70d50a2aea71) | [payout](https://testnet.monadvision.com/tx/0x6f360be3884051af5e2ae367bf7d66ae095808110756b3fa740a203ef474a556) |
 
-Base Sepolia and Avalanche Fuji also have an older USDC split at `0x457c…db147` (no router). It stays
-in the records and in `wallet.config.ts` under `otherSplits`.
-
-Mainnet plan (`../funding-plan.json`, `deploy`): a USDC split on all seven chains (Arc, Tempo,
-Arbitrum, Avalanche, Base, Robinhood Chain, Monad), with Robinhood paying USDG and Tempo pathUSD; an
-EURC split on Arc only; DonateRouters on Arc, Arbitrum, Avalanche, Base and Monad, plus the Arc EURC
-router. Tempo's TIP-20 tokens and Robinhood's USDG have no EIP-3009, so those chains get no router.
-The mainnet treasury is `0x7b136b872bEad1dAE557d1286f125B7A8A197C9A`.
+Mainnet plan (`../funding-plan.json`, `deploy`): a USDC split on Arc and an EURC split on Arc, with
+DonateRouters in front of both (USDC and EURC). The mainnet treasury is
+`0x7b136b872bEad1dAE557d1286f125B7A8A197C9A`.
 
 ## DonateRouter: give straight to the shelter, gas-free
 
@@ -123,9 +111,7 @@ What the chain enforces:
   chains) and has been rotated in on-chain, and `preview` sends nothing to the treasury. `SHELTER_HANDED_OVER=false` closes them on every chain.
 
 Chains: the signed path needs Circle's EIP-3009 on the chain's USDC. `fund router plan` runs a
-read-only `authorizationState` preflight and refuses Tempo outright: its stablecoins are TIP-20
-tokens without EIP-3009, so a router there would only support `flush`. Robinhood Chain has no router
-either: mainnet pays USDG (no EIP-3009) and the testnet token is a mock.
+read-only `authorizationState` preflight before the deploy.
 
 Verified on Arc:
 

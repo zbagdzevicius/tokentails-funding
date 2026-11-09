@@ -36,8 +36,8 @@ contract DeployShelterSplitTest is TestBase {
         vm.expectRevert(abi.encodeWithSelector(DeployShelterSplit.WrongChain.selector, uint256(5042), uint256(31337)));
         d.run();
 
-        // Testnet-only mock token path (Robinhood Chain testnet has no stablecoin): deploys MockUSDC in
-        // the same run, mints to the given address, ignores SHELTERSPLIT_TOKEN.
+        // Testnet-only mock token path (a testnet with no stablecoin, e.g. local anvil): deploys MockUSDC
+        // in the same run, mints to the given address, ignores SHELTERSPLIT_TOKEN.
         vm.setEnv("EXPECTED_CHAIN_ID", "0");
         vm.setEnv("SHELTERSPLIT_MOCK_TOKEN", "1");
         vm.setEnv("SHELTERSPLIT_MOCK_MINT", "2500000");
@@ -50,8 +50,8 @@ contract DeployShelterSplitTest is TestBase {
         assertEq(MockUSDC(mt).balanceOf(owner), 2500000, "minted to SHELTERSPLIT_MOCK_MINT_TO");
         assertEq(MockUSDC(mt).symbol(), "mUSDC", "symbol says mock");
 
-        // ...and never on a mainnet chain id (Robinhood Chain mainnet 4663, Arc 5042, Base 8453)
-        uint256[3] memory mains = [uint256(4663), 5042, 8453];
+        // ...and never on a mainnet chain id (Arc mainnet 5042)
+        uint256[1] memory mains = [uint256(5042)];
         for (uint256 i = 0; i < mains.length; i++) {
             vm.chainId(mains[i]);
             DeployShelterSplit dx = new DeployShelterSplit();

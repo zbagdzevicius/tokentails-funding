@@ -303,19 +303,19 @@ contract CappedSpenderTest is TestBase {
         DeployCappedSpender d = new DeployCappedSpender();
         // fine: Arc testnet, native, 0.05 / 0.10 USDC at 18 decimals under the 1 USDC default ceiling
         d.check(5042002, 5042002, true, N_TX, N_DAY, 1e18);
-        d.check(8453, 8453, false, E_TX, E_DAY, 1e6); // ERC-20 mode off Arc is fine
+        d.check(31337, 31337, false, E_TX, E_DAY, 1e6); // ERC-20 mode off Arc is fine
         vm.expectRevert(DeployCappedSpender.ExpectedChainIdRequired.selector);
         d.check(5042002, 0, true, N_TX, N_DAY, 1e18);
         vm.expectRevert(abi.encodeWithSelector(DeployCappedSpender.WrongChain.selector, uint256(5042), uint256(5042002)));
         d.check(5042002, 5042, true, N_TX, N_DAY, 1e18);
-        // native mode on Monad would hand out MON labelled as USDC
-        vm.expectRevert(abi.encodeWithSelector(DeployCappedSpender.NativeModeIsArcOnly.selector, uint256(143)));
-        d.check(143, 143, true, N_TX, N_DAY, 1e18);
+        // native mode off Arc (anvil 31337) would hand out its native coin labelled as USDC
+        vm.expectRevert(abi.encodeWithSelector(DeployCappedSpender.NativeModeIsArcOnly.selector, uint256(31337)));
+        d.check(31337, 31337, true, N_TX, N_DAY, 1e18);
         // an 18-decimal cap in 6-decimal ERC-20 mode is 5e10 USDC: refused
         vm.expectRevert(abi.encodeWithSelector(DeployCappedSpender.PerTxAboveCeiling.selector, N_TX, uint256(1e6)));
-        d.check(8453, 8453, false, N_TX, N_TX, 1e6);
+        d.check(31337, 31337, false, N_TX, N_TX, 1e6);
         vm.expectRevert(abi.encodeWithSelector(DeployCappedSpender.DailyAboveCeiling.selector, uint256(1e9), uint256(1e8)));
-        d.check(8453, 8453, false, E_TX, 1e9, 1e6);
+        d.check(31337, 31337, false, E_TX, 1e9, 1e6);
         assertTrue(d.isArc(5042) && d.isArc(5042002) && !d.isArc(31337), "Arc ids");
     }
 

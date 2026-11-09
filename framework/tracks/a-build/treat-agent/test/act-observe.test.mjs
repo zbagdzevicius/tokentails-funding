@@ -147,9 +147,9 @@ test('observe: router gifts are left to the backend matcher unless TREAT_AGENT_M
 });
 
 test('observe refuses a native-mode spender off Arc (the native coin would not be USDC)', async () => {
-  const { fetchImpl } = stubRpc({ chainId: 10143 });
+  const { fetchImpl } = stubRpc({ chainId: 31337 });
   await assert.rejects(observe({ rpc: makeRpc('http://stub', { fetchImpl }), spender: SPENDER, needsFile: null }), /native mode is Arc only/);
-  const erc = stubRpc({ chainId: 10143, native: false });
+  const erc = stubRpc({ chainId: 31337, native: false });
   const obs = await observe({ rpc: makeRpc('http://stub', { fetchImpl: erc.fetchImpl }), spender: SPENDER, needsFile: null });
   assert.equal(obs.spender.unitDecimals, 6);
 });

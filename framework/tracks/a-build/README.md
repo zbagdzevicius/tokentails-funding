@@ -1,9 +1,8 @@
 # Track A — Build once, submit many
 
-One Solidity contract, **ShelterSplit**, built and tested once, deployed to several EVM chains, feeds
+One Solidity contract, **ShelterSplit**, built and tested once, deployed to the Arc EVM chain, feeds
 many hackathon and grant submissions: Colosseum World's Fair (Oct 12), Arc Microgrants (Oct 14,
-needs Arc **mainnet**), Arbitrum Singapore (Oct 4) and Dubai (Nov 16 – Dec 6) buildathons, Circle
-Developer Grants, Base Builder Grants, Arbitrum DDA gaming, Team1 Avalanche. Default frame:
+needs Arc **mainnet**), and Tameion. Default frame:
 `payout-rail`.
 
 ShelterSplit is an owner-managed registry of shelter wallets with basis-point shares (total at most
@@ -14,7 +13,7 @@ guard, pause, two-step ownership, safe transfers for tokens that return no bool,
 actually arrived (fee-on-transfer safe). No dependencies: the tests use a local cheatcode interface
 (`shelter-split/test/utils/Vm.sol`) instead of forge-std.
 
-### Payout paths (added 2026-09-29 for Arc and Tempo)
+### Payout paths (added 2026-09-29 for Arc)
 
 | Call | Pays out | Events | Units |
 |---|---|---|---|
@@ -41,18 +40,15 @@ Evidence, fetched 2026-09-29:
   counted twice. Any failed native send (shelter contract that rejects it, blocklist) reverts the
   whole batch; deactivate that shelter to resume. `receive` needs more gas than the 2300 stipend of
   `transfer()`, so value sent that way bounces back.
-- Tempo ([tempo-std ITIP20.sol](https://github.com/tempoxyz/tempo-std/blob/master/src/interfaces/ITIP20.sol),
-  [TIP-20 spec](https://tempo.xyz/developers/docs/protocol/tip20/spec)):
-  `function transferWithMemo(address to, uint256 amount, bytes32 memo) external;` (no return value;
-  `transferFromWithMemo` returns bool). "The memo is always a fixed 32-byte field."
+- TIP-20 memo path: `function transferWithMemo(address to, uint256 amount, bytes32 memo) external;`
+  (no return value; `transferFromWithMemo` returns bool). "The memo is always a fixed 32-byte field."
   `disburseWithMemo` checks that the contract balance is back to where it started, so a token whose
   fallback swallows the call cannot strand funds. Receive policies (T6) still silently redirect a
   blocked shelter's share, as with `disburse` (see `test/Tip20Compat.t.sol`).
 - EURC ([Arc contract addresses](https://docs.arc.io/arc/references/contract-addresses),
   [Circle EURC addresses](https://developers.circle.com/stablecoins/eurc-contract-addresses)):
   Arc mainnet `0xbEf5f6d51CB62b58e6A8f77868681825C6fe21c1`, Arc testnet
-  `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` (both pages agree, 6 decimals). Circle also lists
-  Avalanche and Base; it lists nothing for Arbitrum or Tempo, so those are `null` with `verify: true`.
+  `0x89B50855Aa3bE2F677cD6303Cec089B5F319D72a` (both pages agree, 6 decimals).
 
 ### DonateRouter on mainnet before the handover (2026-10-04 F2 review H2; decision changed 2026-10-05)
 
@@ -73,14 +69,14 @@ split's recipient is rotated to a shelter-held wallet confirmed through a separa
 |---|---|
 | `shelter-split/` | Foundry project: `src/ShelterSplit.sol`, `test/`, `script/DeployShelterSplit.s.sol` |
 | `chains.json` | Target chains: chain IDs, explorer URL patterns, USDC addresses, the **env var name** for each RPC |
-| `deployments.json` | Registry of real deployments, written only by `fund a:record`, `fund a:ingest` and `fund a:verify` (testnet ShelterSplits on all seven chains so far; no mainnet entry yet) |
+| `deployments.json` | Registry of real deployments, written only by `fund a:record`, `fund a:ingest` and `fund a:verify` (testnet and mainnet Arc splits so far) |
 | `programs/<key>.json` | One profile per program: chain, mainnet gate, build window, criteria, submission fields and limits |
 | `submission/master.md` | Master submission template every program renders through |
 | `templates/` | Track A `call.md` (extra fields) and hackathon `draft.md` skeleton, copied by `fund new` / `a:init` |
 | `shelter-split/src/DonateRouter.sol` | Ownerless router: one-signature EIP-3009 gifts (`donateWithAuthorization(Gift, memo, sig)`), native gifts on Arc (`donateNative`), `flush` for stray transfers; reverts `TreasuryShare` / `RecipientsChanged`. Deploy: `script/DeployDonateRouter.s.sol` (founder, `--account`) |
 | `shelter-split/src/CappedSpender.sol` | The treat agent's wallet: immutable per-gift and per-UTC-day caps, pays only ShelterSplit. Deploy: `script/DeployCappedSpender.s.sol` |
 | `router/` | Router helpers (`lib.mjs`: recipients hash, nonce, typed data) and `simulate-arc-testnet.sh` (read-only check against the live Arc testnet split) |
-| `router-deployments.json` | DonateRouter deployments, recorded by `fund router record` or the `<network>-all.sh` wrapper from the Foundry broadcast. Today: testnet routers on Arc, Base, Arbitrum, Avalanche and Monad, plus EURC routers on Arc and Avalanche. Separate from `deployments.json` |
+| `router-deployments.json` | DonateRouter deployments, recorded by `fund router record` or the `<network>-all.sh` wrapper from the Foundry broadcast. Today: USDC and EURC routers on Arc testnet and mainnet. Separate from `deployments.json` |
 | `treat-agent/` | Claude decides treats, CappedSpender limits them on-chain; `fork-demo.sh` records the demo on a local Arc testnet fork |
 | `e2e-donate/` | `stack.sh all`: the 13 donation flows end to end on a local fork with anvil dev keys only |
 
@@ -111,8 +107,8 @@ node bin/fund.mjs a:mainnet-plan --network mainnet   # wave/mainnet-all.sh + wav
 CONFIRM_MAINNET=yes DRY_RUN=1 ./tracks/a-build/wave/mainnet-all.sh   # a person runs it, never an AI agent
 node bin/fund.mjs a:distribute --network testnet     # only the top-ups: wave/distribute-testnet.sh
 node bin/fund.mjs a:pending --network mainnet        # JSON: per chain, what is still to deploy or verify
-node bin/fund.mjs router plan --chain 43114 --token EURC [--json]   # router in front of the EURC split
-node bin/fund.mjs router record --chain 43114 --token EURC          # record it from the Foundry broadcast
+node bin/fund.mjs router plan --chain 5042 --token EURC [--json]   # router in front of the EURC split
+node bin/fund.mjs router record --chain 5042 --token EURC          # record it from the Foundry broadcast
 ```
 
 `funding-plan.json` holds per-chain amounts (and a reason) for the deployer's own reserve, the hot
@@ -124,7 +120,7 @@ distribute → `fund fill` → files to commit; a failing chain stops, the other
 what is recorded. Mainnet scripts exit unless `CONFIRM_MAINNET=yes` and no AI-agent env is set.
 The mainnet plan is minimal by default (deploys, one 0.1-token proof per instance, a 10-treat hot-wallet
 float, 1.5x gas); `PLAN=topup node bin/fund.mjs a:distribute --network mainnet` (or `--plan topup`) writes
-`wave/distribute-mainnet-topup.sh` from `mainnet.profiles.topup` (one week of treats, the Base agent).
+`wave/distribute-mainnet-topup.sh` from `mainnet.profiles.topup` (one week of treats, the hot-wallet agent).
 
 ## The fast loop
 
@@ -185,8 +181,8 @@ node bin/fund.mjs a:ingest                     # (run by the script) record + ve
   `script/ProofDisburse.s.sol`, which calls `addShelter`, `approve` and `disburse`. That gives one
   real payout to one real shelter. `a:ingest` records the tx in `proofTxs`, and every submission's
   deployment table links it.
-- **Payout token:** `splitToken` in `chains.json` overrides USDC for a network. Mezo pays in MUSD;
-  fill in its address from explorer.mezo.org first.
+- **Payout token:** `splitToken` in `chains.json` overrides USDC for a network when a chain pays out
+  in its own stablecoin.
 - **Second token (EURC):** `splitTokens.EURC` in `chains.json` lists it per network.
   `a:wave --token EURC` writes `wave/deploy-<network>-eurc.sh`, which deploys a separate instance
   with the same script (`SHELTERSPLIT_TOKEN` = the EURC address). Chains with no entry are left out.
@@ -208,14 +204,12 @@ fails at `ready`. To run it by hand: `fund a:verify-source [chain] [network] [--
 
 | Chain | Verifier (`verifier` in chains.json) |
 |---|---|
-| Arc | Blockscout `explorer.testnet.arc.io/api/`; mainnet `explorer.arc.io/api/` (assumed, check on the first mainnet run) |
-| Tempo | Sourcify-compatible `contracts.tempo.xyz` (mainnet and testnet) |
-| Arbitrum, Base | Blockscout (keyless) |
-| Avalanche | Routescan Etherscan-compatible API (keyless, `apiKey: verifyContract`) |
+| Arc testnet | Blockscout `explorer.testnet.arc.io/api/` |
+| Arc mainnet | Sourcify `sourcify.dev/server` (the arc.io API answers 403 behind a Cloudflare challenge) |
 
 Constructor arguments come from the deploy broadcast; without it they are read back from the
 contract (`token`, `treasury`, `owner`), which no longer matches once ownership moves to a Safe.
-Verified on 2026-10-02: Arc testnet (Blockscout `is_verified: true`) and Tempo testnet (Sourcify `exact_match`).
+Verified on 2026-10-02: Arc testnet (Blockscout `is_verified: true`); 2026-10-07: Arc mainnet (Sourcify `exact_match`).
 
 ## Track A gates in `fund check`
 

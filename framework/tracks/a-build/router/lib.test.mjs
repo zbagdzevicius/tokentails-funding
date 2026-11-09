@@ -17,7 +17,6 @@ const chains = {
     testnet: { chainId: 5042002, usdc: USDC, rpcEnv: 'RPC_ARC_TESTNET' },
     mainnet: { chainId: 5042, usdc: USDC, rpcEnv: 'RPC_ARC_MAINNET' },
   } },
-  mezo: { networks: { testnet: { chainId: 31611, usdc: null, rpcEnv: 'RPC_MEZO_TESTNET' } } },
 };
 const deployments = [
   { contract: 'ShelterSplit', chainId: 5042002, address: SPLIT_A, token: 'USDC', recorded: '2026-10-01T00:00:00Z' },
@@ -54,17 +53,9 @@ test('routerDryRun prints simulate and manual broadcast commands, never broadcas
   assert.match(text, /token has no EIP-3009; router would only support flush/);
 });
 
-test('routerDryRun refuses chains whose USDC has no EIP-3009 (Tempo TIP-20)', () => {
-  const withTempo = { ...chains, tempo: { networks: { testnet: { chainId: 42431, usdc: '0x20c0000000000000000000000000000000000000', rpcEnv: 'RPC_TEMPO_TESTNET' } } } };
-  const r = routerDryRun({ chainId: 42431, split: SPLIT_A, chains: withTempo, deployments: [], routerDeployments: [] });
-  assert.equal(r.ok, false);
-  assert.match(r.problems.join('\n'), /token has no EIP-3009; router would only support flush/);
-});
-
 test('routerDryRun honours --split and refuses unknown chains or chains without USDC', () => {
   assert.match(routerDryRun({ chainId: 5042002, split: SPLIT_A, chains, deployments, routerDeployments: [] }).lines.join('\n'), /SPLIT=0xaaaa/);
   assert.equal(routerDryRun({ chainId: 999, chains, deployments, routerDeployments: [] }).ok, false);
-  assert.equal(routerDryRun({ chainId: 31611, chains, deployments, routerDeployments: [] }).ok, false);
   assert.equal(routerDryRun({ chainId: 5042, chains, deployments: [], routerDeployments: [] }).ok, false);
   assert.equal(routerDryRun({ chainId: 5042002, split: '0x12', chains, deployments, routerDeployments: [] }).ok, false);
 });
@@ -120,12 +111,11 @@ test('validateRouterDeployments checks the schema; the shipped file is valid', (
 test('S1: routerAlreadyRecorded keys on chain + network + router, not the address alone', async () => {
   const { routerAlreadyRecorded } = await import('./lib.mjs');
   const R = '0xe39742be' + '00'.repeat(16);
-  const list = [{ chainId: 42161, network: 'mainnet', router: R }];
-  assert.equal(routerAlreadyRecorded(list, { chainId: 42161, network: 'mainnet', router: R.toUpperCase().replace('0X', '0x') }), true);
+  const list = [{ chainId: 5042, network: 'mainnet', router: R }];
+  assert.equal(routerAlreadyRecorded(list, { chainId: 5042, network: 'mainnet', router: R.toUpperCase().replace('0X', '0x') }), true);
   // Same CREATE address on another chain (same deployer nonce) is a new router.
-  assert.equal(routerAlreadyRecorded(list, { chainId: 43114, network: 'mainnet', router: R }), false);
-  assert.equal(routerAlreadyRecorded(list, { chainId: 8453, network: 'mainnet', router: R }), false);
-  assert.equal(routerAlreadyRecorded(list, { chainId: 42161, network: 'testnet', router: R }), false);
+  assert.equal(routerAlreadyRecorded(list, { chainId: 5042002, network: 'mainnet', router: R }), false);
+  assert.equal(routerAlreadyRecorded(list, { chainId: 5042, network: 'testnet', router: R }), false);
 });
 
 test('S1: fund router record records an identical router address on a second chain', async () => {
@@ -137,15 +127,15 @@ test('S1: fund router record records an identical router address on a second cha
   const R = '0x' + 'e3'.repeat(20);
   const S1 = '0x' + '11'.repeat(20), S2 = '0x' + '22'.repeat(20);
   const U1 = '0x' + 'a1'.repeat(20), U2 = '0x' + 'a2'.repeat(20);
-  wf(join(dir, 'chains.json'), JSON.stringify({ arbitrum: { networks: { mainnet: { chainId: 42161, usdc: U1 } } }, avalanche: { networks: { mainnet: { chainId: 43114, usdc: U2 } } } }));
+  wf(join(dir, 'chains.json'), JSON.stringify({ arc: { networks: { mainnet: { chainId: 5042, usdc: U1 }, testnet: { chainId: 5042002, usdc: U2 } } } }));
   wf(join(dir, 'deployments.json'), JSON.stringify([
-    { contract: 'ShelterSplit', chainId: 42161, address: S1, token: 'USDC', recorded: '2026-10-05T00:00:00Z' },
-    { contract: 'ShelterSplit', chainId: 43114, address: S2, token: 'USDC', recorded: '2026-10-05T00:00:00Z' },
+    { contract: 'ShelterSplit', chainId: 5042, address: S1, token: 'USDC', recorded: '2026-10-05T00:00:00Z' },
+    { contract: 'ShelterSplit', chainId: 5042002, address: S2, token: 'USDC', recorded: '2026-10-05T00:00:00Z' },
   ]));
   const routers = join(dir, 'router-deployments.json');
   const client = join(dir, 'client-routers.json');
   wf(routers, '[]');
-  for (const [id, split, usdc] of [[42161, S1, U1], [43114, S2, U2]]) {
+  for (const [id, split, usdc] of [[5042, S1, U1], [5042002, S2, U2]]) {
     const b = join(dir, 'project', 'broadcast', 'DeployDonateRouter.s.sol', String(id));
     mkdirSync(b, { recursive: true });
     const hash = '0x' + String(id).padStart(64, '0');
@@ -153,15 +143,15 @@ test('S1: fund router record records an identical router address on a second cha
   }
   const env = { ...process.env, FUND_A_CHAINS: join(dir, 'chains.json'), FUND_A_DEPLOYMENTS: join(dir, 'deployments.json'), FUND_A_ROUTER_DEPLOYMENTS: routers, FUND_A_CLIENT_ROUTERS: client, FUND_A_PROJECT: join(dir, 'project') };
   const fund = new URL('../../../bin/fund.mjs', import.meta.url).pathname;
-  for (const id of [42161, 43114, 43114]) {
+  for (const id of [5042, 5042002, 5042002]) {
     const r = spawnSync(process.execPath, [fund, 'router', 'record', '--chain', String(id), '--token', 'USDC'], { env, encoding: 'utf8' });
     assert.equal(r.status, 0, r.stderr + r.stdout);
   }
   const list = JSON.parse(rf(routers, 'utf8'));
-  assert.deepEqual(list.map((x) => x.chainId), [42161, 43114]);
+  assert.deepEqual(list.map((x) => x.chainId), [5042, 5042002]);
   // C1/S11: the client projection is written alongside.
   const pub = JSON.parse(rf(client, 'utf8'));
-  assert.deepEqual(pub.map((x) => [x.chainId, x.router]), [[42161, R], [43114, R]]);
+  assert.deepEqual(pub.map((x) => [x.chainId, x.router]), [[5042, R], [5042002, R]]);
   assert.equal(pub[0].split, undefined);
 });
 
@@ -177,7 +167,7 @@ test('routerEntryFromBroadcast: eip3009 is recorded only when the caller probed 
   const lib = await import('./lib.mjs');
   const S = '0x' + '12'.repeat(20), U = '0x' + '34'.repeat(20), R = '0x' + '56'.repeat(20), H = '0x' + '78'.repeat(32);
   const run = { transactions: [{ transactionType: 'CREATE', contractName: 'DonateRouter', contractAddress: R, hash: H, arguments: [S, U] }], receipts: [{ transactionHash: H, status: '0x1', blockNumber: '0x10' }] };
-  const base = { chainId: 8453, network: 'mainnet', chain: 'base', split: S, token: U, symbol: 'USDC' };
+  const base = { chainId: 5042, network: 'mainnet', chain: 'arc', split: S, token: U, symbol: 'USDC' };
   assert.equal(lib.routerEntryFromBroadcast(run, base).entry.eip3009, undefined);
   const e = lib.routerEntryFromBroadcast(run, { ...base, eip3009: true }).entry;
   assert.equal(e.eip3009, true);
